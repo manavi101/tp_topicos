@@ -61,31 +61,33 @@ int solucion(int argc, char* argv[])
     if (strcmp(argv[1], "--negativo") == 0)
     {
         aplicar_negativo(pixeles, imagen.ancho * imagen.alto);
-        asignar_nombre_archivo(fileNameDest, argv[2], "_negativo.bmp");
+        ;
     }else if(strcmp(argv[1], "--escala-de-grises")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_escala-de-grises.bmp");
+
     }else if(strcmp(argv[1], "--aumentar-contraste")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_aumentar-contraste.bmp");
+
     }else if(strcmp(argv[1], "--tonalidad-azul")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_tonalidad-azul.bmp");
+
     }else if(strcmp(argv[1], "--tonalidad-roja")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_tonalidad-rojo.bmp"); 
+ 
     }else if(strcmp(argv[1], "--tonalidad-verde")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_tonalidad-verde.bmp");
+
     }else if(strcmp(argv[1], "--recortar")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_recortar .bmp");
+
     }else if(strcmp(argv[1], "--rotar-derecha")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_rotar-derecha.bmp");
+
     }else if(strcmp(argv[1], "--rotar-izquierda")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_rotar-izquierda.bmp");
+
     }else if(strcmp(argv[1], "--achicar")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_achicar.bmp");
+        
     }else if(strcmp(argv[1], "--monocromo")){
-        asignar_nombre_archivo(fileNameDest, argv[2], "_monocromo.bmp");
+
     }else{
         printf("Operacion no valida\n");
+        free(pixeles);
         exit(ERROR_ARGUMENTOS);
     }
+    asignar_nombre_archivo(fileNameDest, argv[2], argv[1]);
 
     
 
@@ -177,15 +179,28 @@ int es_bmp(FILE* archivo){
     return 1;
 }
 
+/*
+    Asigna un nombre de archivo con sufijo a partir de un nombre de archivo original.
+    Ejemplo: si el archivo original es "imagen.bmp" y el sufijo es "--negativo", el archivo destino será "imagen_negativo.bmp"
+*/
 void asignar_nombre_archivo(char* destino, const char* origen, const char* sufijo){
+    //origen = "imagen.bmp" termina en .
     while(*origen != '.'){
         *destino = *origen;
         destino++;
         origen++;
     }
-    do{
+    //destino agrego el _
+    destino++;
+    *destino='_';
+    
+    //le agrego el sufijo, elimino el --
+    sufijo+2;
+    while(*sufijo != '\0'){
         *destino = *sufijo;
         destino++;
         sufijo++;
-    }while(*sufijo != '\0');
+    }
+
+    strcat(destino, '.bmp\0');
 }
