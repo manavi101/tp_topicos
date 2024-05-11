@@ -107,7 +107,7 @@ void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata meta) {
     // Escribe los datos de los píxeles
     fseek(archivo, meta.comienzoImagen, SEEK_SET);
     for (int i = 0; i < meta.ancho * meta.alto; i++) {
-        fwrite(pixeles[i].pixel, 1, 3, archivo);  // Escribir 3 bytes por píxel
+        fwrite(pixeles[i].pixel, 1, 3, archivo);  // Escribir 3 bytes por pixel
     }
 
     fclose(archivo);
@@ -140,4 +140,31 @@ int es_bmp(FILE* archivo){
     if(strcmp(tipo, "BM") != 0)
         return 0;
     return 1;
+}
+
+void reducir_contraste(t_pixel* pixeles, int cantidad) // Reduce 25% el contraste
+{
+    for (int i = 0; i < cantidad; i++)
+    {
+        pixeles[i].pixel[0] = pixeles[i].pixel[0] * REDUCCION_CONTRASTE;  // Rojo
+        pixeles[i].pixel[1] = pixeles[i].pixel[1] * REDUCCION_CONTRASTE;  // Verde
+        pixeles[i].pixel[2] = pixeles[i].pixel[2] * REDUCCION_CONTRASTE;  // Azul
+    }   
+}
+
+void aumentar_contraste(t_pixel* pixeles, int cantidad) // Aumenta 25% el contraste
+// Si es mayor a 255 queda en ese valor.
+{
+    for (int i = 0; i < cantidad; i++)
+    {
+        pixeles[i].pixel[0] = pixeles[i].pixel[0] * AUMENTO_CONTRASTE;  // Rojo
+        pixeles[i].pixel[1] = pixeles[i].pixel[1] * AUMENTO_CONTRASTE;  // Verde
+        pixeles[i].pixel[2] = pixeles[i].pixel[2] * AUMENTO_CONTRASTE;  // Azul
+        if(pixeles[i].pixel[0] > 255)
+            pixeles[i].pixel[0] = 255;
+        if(pixeles[i].pixel[1] > 255)
+            pixeles[i].pixel[1] = 255;
+        if(pixeles[i].pixel[2] > 255)
+            pixeles[i].pixel[2] = 255;
+    }   
 }
