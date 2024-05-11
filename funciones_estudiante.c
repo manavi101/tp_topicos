@@ -31,6 +31,7 @@
 
 int solucion(int argc, char* argv[])
 {
+    char fileNameDest[80];
     /*
         Aquí deben hacer el código que solucione lo solicitado.
         Todas las funciones utilizadas deben estar declaradas en este archivo, y en su respectivo .h
@@ -39,12 +40,12 @@ int solucion(int argc, char* argv[])
     if (argc < 3)
     {
         printf("Uso: %s <operacion> <archivo_original.bmp>\n", argv[0]);
-        return ERROR;  // Define ERROR en constantes.h
+        return ERROR_ARGUMENTOS;  // Define ERROR en constantes.h
     }
 
     FILE* archivo = abrir_archivo(argv[2], "rb");
 
-    if(!es_bmp(archivo)){ // Si es 0 o 1
+    if(!es_bmp(archivo)){
         printf("El archivo no es un BMP\n");
         fclose(archivo);
         exit(ERROR_APERTURA_ARCHIVO);
@@ -60,10 +61,36 @@ int solucion(int argc, char* argv[])
     if (strcmp(argv[1], "--negativo") == 0)
     {
         aplicar_negativo(pixeles, imagen.ancho * imagen.alto);
+        asignar_nombre_archivo(fileNameDest, argv[2], "_negativo.bmp");
+    }else if(strcmp(argv[1], "--escala-de-grises")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_escala-de-grises.bmp");
+    }else if(strcmp(argv[1], "--aumentar-contraste")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_aumentar-contraste.bmp");
+    }else if(strcmp(argv[1], "--tonalidad-azul")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_tonalidad-azul.bmp");
+    }else if(strcmp(argv[1], "--tonalidad-roja")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_tonalidad-rojo.bmp"); 
+    }else if(strcmp(argv[1], "--tonalidad-verde")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_tonalidad-verde.bmp");
+    }else if(strcmp(argv[1], "--recortar")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_recortar .bmp");
+    }else if(strcmp(argv[1], "--rotar-derecha")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_rotar-derecha.bmp");
+    }else if(strcmp(argv[1], "--rotar-izquierda")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_rotar-izquierda.bmp");
+    }else if(strcmp(argv[1], "--achicar")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_achicar.bmp");
+    }else if(strcmp(argv[1], "--monocromo")){
+        asignar_nombre_archivo(fileNameDest, argv[2], "_monocromo.bmp");
+    }else{
+        printf("Operacion no valida\n");
+        exit(ERROR_ARGUMENTOS);
     }
 
+    
+
     // Guardo la imagen modificada
-    guardar_bmp(argv[2], pixeles, imagen);
+    guardar_bmp(fileNameDest, pixeles, imagen);
     free(pixeles); // libera
 
     return TODO_OK;
@@ -89,11 +116,18 @@ t_metadata leer_bmp(FILE* archivo)
 t_pixel* leer_pixeles(FILE* archivo, t_metadata meta)
 {
     t_pixel* pixeles = malloc(meta.ancho * meta.alto * sizeof(t_pixel));
+
+    if(!pixeles){
+        printf("Error al reservar memoria\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+
     fseek(archivo, meta.comienzoImagen, SEEK_SET);
     for (int i = 0; i < meta.ancho * meta.alto; i++)
     {
         fread(pixeles[i].pixel, 3, 1, archivo);  // Leer 3 bytes por pixel
     }
+
     return pixeles;
 }
 
@@ -120,7 +154,8 @@ void aplicar_negativo(t_pixel* pixeles, int cantidad)
         pixeles[i].pixel[0] = 255 - pixeles[i].pixel[0];  // Rojo
         pixeles[i].pixel[1] = 255 - pixeles[i].pixel[1];  // Verde
         pixeles[i].pixel[2] = 255 - pixeles[i].pixel[2];  // Azul
-    }
+    } 
+
 }
 
 FILE* abrir_archivo(const char* filename, const char* modo)
@@ -167,4 +202,15 @@ void aumentar_contraste(t_pixel* pixeles, int cantidad) // Aumenta 25% el contra
         if(pixeles[i].pixel[2] > 255)
             pixeles[i].pixel[2] = 255;
     }   
+void asignar_nombre_archivo(char* destino, const char* origen, const char* sufijo){
+    while(*origen != '.'){
+        *destino = *origen;
+        destino++;
+        origen++;
+    }
+    do{
+        *destino = *sufijo;
+        destino++;
+        sufijo++;
+    }while(*sufijo != '\0');
 }
