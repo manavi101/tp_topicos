@@ -31,11 +31,12 @@
 
 int solucion(int argc, char* argv[])
 {
-    char fileNameDest[80];
     /*
         Aquí deben hacer el código que solucione lo solicitado.
         Todas las funciones utilizadas deben estar declaradas en este archivo, y en su respectivo .h
     */
+
+    char fileNameDest[TAM_MAX_FILENAME];
 
     if (argc < 3)
     {
@@ -58,20 +59,20 @@ int solucion(int argc, char* argv[])
     fclose(archivo);
 
     // Aplicación de negativo
-    if (strcmp(argv[1], "--negativo") == 0)
-    {
+    if (strcmp(argv[1], "--negativo") == 0){
         aplicar_negativo(pixeles, imagen.ancho * imagen.alto);
-        ;
     }else if(strcmp(argv[1], "--escala-de-grises")){
 
+    }else if(strcmp(argv[1], "--reducir-contraste")){
+        reducir_contraste(pixeles, imagen.ancho * imagen.alto);
     }else if(strcmp(argv[1], "--aumentar-contraste")){
-
+        aumentar_contraste(pixeles, imagen.ancho * imagen.alto);
     }else if(strcmp(argv[1], "--tonalidad-azul")){
-
+        tonalidad_azul(pixeles, imagen.ancho * imagen.alto);
     }else if(strcmp(argv[1], "--tonalidad-roja")){
- 
+        tonalidad_roja(pixeles, imagen.ancho * imagen.alto);
     }else if(strcmp(argv[1], "--tonalidad-verde")){
-
+        tonalidad_verde(pixeles, imagen.ancho * imagen.alto);
     }else if(strcmp(argv[1], "--recortar")){
 
     }else if(strcmp(argv[1], "--rotar-derecha")){
@@ -149,17 +150,6 @@ void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata meta) {
     fclose(archivo);
 }
 
-void aplicar_negativo(t_pixel* pixeles, int cantidad)
-{
-    for (int i = 0; i < cantidad; i++)
-    {
-        pixeles[i].pixel[0] = 255 - pixeles[i].pixel[0];  // Rojo
-        pixeles[i].pixel[1] = 255 - pixeles[i].pixel[1];  // Verde
-        pixeles[i].pixel[2] = 255 - pixeles[i].pixel[2];  // Azul
-    } 
-
-}
-
 FILE* abrir_archivo(const char* filename, const char* modo)
 {
     FILE* archivo = fopen(filename, modo);
@@ -179,32 +169,6 @@ int es_bmp(FILE* archivo){
     return 1;
 }
 
-void reducir_contraste(t_pixel* pixeles, int cantidad) // Reduce 25% el contraste
-{
-    for (int i = 0; i < cantidad; i++)
-    {
-        pixeles[i].pixel[0] = pixeles[i].pixel[0] * REDUCCION_CONTRASTE;  // Rojo
-        pixeles[i].pixel[1] = pixeles[i].pixel[1] * REDUCCION_CONTRASTE;  // Verde
-        pixeles[i].pixel[2] = pixeles[i].pixel[2] * REDUCCION_CONTRASTE;  // Azul
-    }   
-}
-
-void aumentar_contraste(t_pixel* pixeles, int cantidad) // Aumenta 25% el contraste
-// Si es mayor a 255 queda en ese valor.
-{
-    for (int i = 0; i < cantidad; i++)
-    {
-        pixeles[i].pixel[0] = pixeles[i].pixel[0] * AUMENTO_CONTRASTE;  // Rojo
-        pixeles[i].pixel[1] = pixeles[i].pixel[1] * AUMENTO_CONTRASTE;  // Verde
-        pixeles[i].pixel[2] = pixeles[i].pixel[2] * AUMENTO_CONTRASTE;  // Azul
-        if(pixeles[i].pixel[0] > 255)
-            pixeles[i].pixel[0] = 255;
-        if(pixeles[i].pixel[1] > 255)
-            pixeles[i].pixel[1] = 255;
-        if(pixeles[i].pixel[2] > 255)
-            pixeles[i].pixel[2] = 255;
-    }
-}   
 /*
     Asigna un nombre de archivo con sufijo a partir de un nombre de archivo original.
     Ejemplo: si el archivo original es "imagen.bmp" y el sufijo es "--negativo", el archivo destino será "imagen_negativo.bmp"
@@ -228,5 +192,59 @@ void asignar_nombre_archivo(char* destino, const char* origen, const char* sufij
         sufijo++;
     }
 
-    strcat(destino, '.bmp\0');
+    strcat(destino, ".bmp\0");
+}
+
+
+void aplicar_negativo(t_pixel* pixeles, int cantidad)
+{
+    for (int i = 0; i < cantidad; i++)
+    {
+        pixeles[i].pixel[0] = 255 - pixeles[i].pixel[0];  // Rojo
+        pixeles[i].pixel[1] = 255 - pixeles[i].pixel[1];  // Verde
+        pixeles[i].pixel[2] = 255 - pixeles[i].pixel[2];  // Azul
+    } 
+
+}
+
+void reducir_contraste(t_pixel* pixeles, int cantidad) // Reduce 25% el contraste
+{
+    for (int i = 0; i < cantidad; i++)
+    {
+        pixeles[i].pixel[0] = MAXRGB((int)(pixeles[i].pixel[0] * REDUCCION_CONTRASTE));  // Rojo
+        pixeles[i].pixel[1] = MAXRGB((int)(pixeles[i].pixel[1] * REDUCCION_CONTRASTE));  // Verde
+        pixeles[i].pixel[2] = MAXRGB((int)(pixeles[i].pixel[2] * REDUCCION_CONTRASTE));  // Azul
+    }   
+}
+
+void aumentar_contraste(t_pixel* pixeles, int cantidad){ // Aumenta 25% el contraste
+    // Si es mayor a 255 queda en ese valor.
+    for (int i = 0; i < cantidad; i++)
+    {
+        pixeles[i].pixel[0] = MAXRGB((int)(pixeles[i].pixel[0] * AUMENTO_CONTRASTE));  // Rojo
+        pixeles[i].pixel[1] = MAXRGB((int)(pixeles[i].pixel[1] * AUMENTO_CONTRASTE));  // Verde
+        pixeles[i].pixel[2] = MAXRGB((int)(pixeles[i].pixel[2] * AUMENTO_CONTRASTE));  // Azul
+    }
+}  
+
+void tonalidad_azul(t_pixel* pixeles, int cantidad)
+{
+    aumentar_tonalidad(pixeles, cantidad, 2);
+}
+
+void tonalidad_verde(t_pixel* pixeles, int cantidad)
+{
+    aumentar_tonalidad(pixeles, cantidad, 1);
+}
+
+void tonalidad_roja(t_pixel* pixeles, int cantidad)
+{
+    aumentar_tonalidad(pixeles, cantidad, 0);
+} 
+
+void aumentar_tonalidad(t_pixel* pixeles, int cantidad, int color){
+    for (int i = 0; i < cantidad; i++){     
+        int x= MAXRGB((int)(pixeles[i].pixel[color]*AUMENTO_TONALIDAD));
+        pixeles[i].pixel[color] = x;
+    }
 }
