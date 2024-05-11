@@ -122,3 +122,15 @@ void aplicar_negativo(t_pixel* pixeles, int cantidad)
         pixeles[i].pixel[2] = 255 - pixeles[i].pixel[2];  // Azul
     }
 }
+
+
+
+void abrir_archivo(FILE** archivo, const char* filename, const char* modo)
+{
+    *archivo = fopen(filename, modo);
+    if (!*archivo)
+    {
+        printf("Error al abrir el archivo %s\n", filename);
+        exit(ERROR_APERTURA_ARCHIVO);
+    }
+}

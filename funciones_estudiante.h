@@ -10,6 +10,9 @@
 
 int solucion(int argc, char* argv[]);
 
+void abrir_archivo(FILE** archivo, const char* filename, const char* modo);
+
+
 t_metadata leer_bmp(FILE* archivo);
 t_pixel* leer_pixeles(FILE* archivo, t_metadata meta);
 
