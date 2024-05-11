@@ -207,7 +207,7 @@ void aplicar_negativo(t_pixel* pixeles, int cantidad)
 
 }
 
-void reducir_contraste(t_pixel* pixeles, int cantidad) // Reduce 25% el contraste
+void reducir_contraste(t_pixel* pixeles, int cantidad)
 {
     for (int i = 0; i < cantidad; i++)
     {
@@ -217,8 +217,7 @@ void reducir_contraste(t_pixel* pixeles, int cantidad) // Reduce 25% el contrast
     }   
 }
 
-void aumentar_contraste(t_pixel* pixeles, int cantidad){ // Aumenta 25% el contraste
-    // Si es mayor a 255 queda en ese valor.
+void aumentar_contraste(t_pixel* pixeles, int cantidad){ // Si es mayor a 255 queda en ese valor.
     for (int i = 0; i < cantidad; i++)
     {
         pixeles[i].pixel[0] = MAXRGB((int)(pixeles[i].pixel[0] * AUMENTO_CONTRASTE));  // Rojo
@@ -247,4 +246,20 @@ void aumentar_tonalidad(t_pixel* pixeles, int cantidad, int color){
         int x= MAXRGB((int)(pixeles[i].pixel[color]*AUMENTO_TONALIDAD));
         pixeles[i].pixel[color] = x;
     }
+}
+
+//Rotar 90 grados a la derecha
+void rotar_derecha(t_pixel* pixeles, int cantidad, int ancho, int alto){
+    t_pixel* pixeles_rotados = malloc(cantidad * sizeof(t_pixel));
+    if(!pixeles_rotados){
+        printf("Error al reservar memoria\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+    for(int i = 0; i < ancho; i++){
+        for(int j = 0; j < alto; j++){
+            pixeles_rotados[j * ancho + (ancho - i - 1)] = pixeles[i * alto + j];
+        }
+    }
+    free(pixeles);
+    pixeles = pixeles_rotados;
 }
