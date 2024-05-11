@@ -7,10 +7,10 @@
     DNI: 40570385
     Entrega: si
     -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
+    Apellido: Villalba
+    Nombre: Matias  
+    DNI: 40932150
+    Entrega: si
     -----------------
     Apellido:
     Nombre:
@@ -42,26 +42,29 @@ int solucion(int argc, char* argv[])
         return ERROR;  // Define ERROR en constantes.h
     }
 
-    FILE* archivo = fopen(argv[2], "rb");
-    if (!archivo)
-    {
-        printf("Error al abrir el archivo %s\n", argv[2]);
-        return ERROR;
+    FILE* archivo = abrir_archivo(argv[2], "rb");
+
+    if(!es_bmp(archivo)){ // Si es 0 o 1
+        printf("El archivo no es un BMP\n");
+        fclose(archivo);
+        exit(ERROR_APERTURA_ARCHIVO);
     }
 
     t_metadata imagen = leer_bmp(archivo);
-    t_pixel* pixeles = leer_pixeles(archivo, imagen);
+
+    t_pixel* pixeles = leer_pixeles(archivo, imagen); // memoria dinamica
+
     fclose(archivo);
 
     // Aplicación de negativo
     if (strcmp(argv[1], "--negativo") == 0)
     {
-        //aplicar_negativo(pixeles, meta.ancho * meta.alto);
+        aplicar_negativo(pixeles, imagen.ancho * imagen.alto);
     }
 
     // Guardo la imagen modificada
-    //guardar_bmp("salida.bmp", pixeles, meta);
-    free(pixeles);
+    guardar_bmp(argv[2], pixeles, imagen);
+    free(pixeles); // libera
 
     return TODO_OK;
 }
@@ -95,11 +98,8 @@ t_pixel* leer_pixeles(FILE* archivo, t_metadata meta)
 }
 
 void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata meta) {
-    FILE* archivo = fopen(filename, "wb");
-    if (archivo == NULL) {
-        fprintf(stderr, "Error al abrir el archivo para escribir.\n");
-        return;
-    }
+    //TODO: ver que pasa cuando el archivo falla para liberar memoria
+    FILE* archivo = abrir_archivo(filename, "wb");
 
     // Escribe el encabezado BMP
     //escribir_encabezado_bmp(archivo, meta);
@@ -123,14 +123,21 @@ void aplicar_negativo(t_pixel* pixeles, int cantidad)
     }
 }
 
-
-
-void abrir_archivo(FILE** archivo, const char* filename, const char* modo)
+FILE* abrir_archivo(const char* filename, const char* modo)
 {
-    *archivo = fopen(filename, modo);
-    if (!*archivo)
+    FILE* archivo = fopen(filename, modo);
+    if (!archivo)
     {
         printf("Error al abrir el archivo %s\n", filename);
         exit(ERROR_APERTURA_ARCHIVO);
     }
+    return archivo;
+}
+
+int es_bmp(FILE* archivo){
+    char tipo[TAM_CABECERA_BMP];
+    fread(&tipo, sizeof(char)*TAM_CABECERA_BMP, 1, archivo);
+    if(strcmp(tipo, "BM") != 0)
+        return 0;
+    return 1;
 }
