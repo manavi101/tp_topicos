@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.embeddedhtml": "html",
+    "cabeceras.h": "c",
+    "constantes.h": "c",
+    "estructuras.h": "c",
+    "funciones_estudiante.h": "c",
+    "stdio.h": "c"
+  }
+}
