@@ -53,27 +53,27 @@ int solucion(int argc, char* argv[])
     // Aplicación de negativo
     if (strcmp(argv[1], "--negativo") == 0){
         aplicar_negativo(pixeles, metadata.ancho * metadata.alto);
-    }else if(strcmp(argv[1], "--escala-de-grises")){
+    }else if(strcmp(argv[1], "--escala-de-grises")== 0){
 
-    }else if(strcmp(argv[1], "--reducir-contraste")){
+    }else if(strcmp(argv[1], "--reducir-contraste")== 0){
         reducir_contraste(pixeles, metadata.ancho * metadata.alto);
-    }else if(strcmp(argv[1], "--aumentar-contraste")){
+    }else if(strcmp(argv[1], "--aumentar-contraste")== 0){
         aumentar_contraste(pixeles, metadata.ancho * metadata.alto);
-    }else if(strcmp(argv[1], "--tonalidad-azul")){
+    }else if(strcmp(argv[1], "--tonalidad-azul")== 0){
         tonalidad_azul(pixeles, metadata.ancho * metadata.alto);
-    }else if(strcmp(argv[1], "--tonalidad-roja")){
+    }else if(strcmp(argv[1], "--tonalidad-roja")== 0){
         tonalidad_roja(pixeles, metadata.ancho * metadata.alto);
-    }else if(strcmp(argv[1], "--tonalidad-verde")){
+    }else if(strcmp(argv[1], "--tonalidad-verde")== 0){
         tonalidad_verde(pixeles, metadata.ancho * metadata.alto);
-    }else if(strcmp(argv[1], "--recortar")){
+    }else if(strcmp(argv[1], "--recortar")== 0){
 
-    }else if(strcmp(argv[1], "--rotar-derecha")){
+    }else if(strcmp(argv[1], "--rotar-derecha")== 0){
 
-    }else if(strcmp(argv[1], "--rotar-izquierda")){
+    }else if(strcmp(argv[1], "--rotar-izquierda")== 0){
 
-    }else if(strcmp(argv[1], "--achicar")){
+    }else if(strcmp(argv[1], "--achicar")== 0){
         
-    }else if(strcmp(argv[1], "--monocromo")){
+    }else if(strcmp(argv[1], "--monocromo")== 0){
 
     }else{
         printf("Operacion no valida\n");
@@ -110,18 +110,20 @@ t_metadata leer_bmp(FILE* archivo)
     fread(&meta.tamArchivo, sizeof(unsigned int), 1, archivo);
     fseek(archivo, 10, SEEK_SET);
     fread(&meta.comienzoImagen, sizeof(unsigned int), 1, archivo);
+    fseek(archivo, 14, SEEK_SET);
+    fread(&meta.tamEncabezado, sizeof(unsigned int), 1, archivo);
     fseek(archivo, 18, SEEK_SET);
     fread(&meta.ancho, sizeof(unsigned int), 1, archivo);
     fread(&meta.alto, sizeof(unsigned int), 1, archivo);
     fseek(archivo, 28, SEEK_SET);
     fread(&meta.profundidad, sizeof(unsigned short), 1, archivo);
-    meta.tamEncabezado = meta.comienzoImagen - 14; // 14 bytes hasta la info del tamaño de imagen
     return meta;
 }
 
 t_pixel* leer_pixeles(FILE* archivo, t_metadata meta)
 {
     t_pixel* pixeles = malloc(meta.ancho * meta.alto * sizeof(t_pixel));
+    
 
     if(!pixeles){
         printf("Error al reservar memoria\n");
@@ -131,6 +133,7 @@ t_pixel* leer_pixeles(FILE* archivo, t_metadata meta)
     fseek(archivo, meta.comienzoImagen, SEEK_SET);
     for (int i = 0; i < meta.ancho * meta.alto; i++)
     {
+        pixeles[i].profundidad = meta.profundidad;
         fread(pixeles[i].pixel, 3, 1, archivo);  // Leer 3 bytes por pixel
     }
 
@@ -146,6 +149,11 @@ void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata * meta) {
     // Escribe los datos de los píxeles
     fseek(archivo, meta->comienzoImagen, SEEK_SET);
     for (t_pixel* fin = pixeles + meta->ancho * meta->alto; pixeles < fin; pixeles++) {
+        if(pixeles->pixel[0] > 255 || pixeles->pixel[1] > 255 || pixeles->pixel[2] > 255){
+            printf("Error: pixel con valor mayor a 255\n");
+            fclose(archivo);
+            exit(ERROR);
+        }
         fwrite(pixeles->pixel, 3, 1, archivo);  // Escribir 3 bytes por pixel
     }
     fclose(archivo);
@@ -157,6 +165,8 @@ void escribir_encabezado_bmp(FILE* archivo, t_metadata* meta){
     fwrite(&meta->tamArchivo, sizeof(unsigned int), 1, archivo);
     fseek(archivo, 10, SEEK_SET);
     fwrite(&meta->comienzoImagen, sizeof(unsigned int), 1, archivo);
+    fseek(archivo, 14, SEEK_SET);
+    fwrite(&meta->tamEncabezado, sizeof(unsigned int), 1, archivo);
     fseek(archivo, 18, SEEK_SET);
     fwrite(&meta->ancho, sizeof(unsigned int), 1, archivo);
     fwrite(&meta->alto, sizeof(unsigned int), 1, archivo);
@@ -290,5 +300,5 @@ while(pixeles<fin){
 }
 
 int promedio_colores(t_pixel* pixeles){
-   return (int)((pixeles->pixel[1]+pixeles->pixel[2]+pixeles->pixel[3])/3);
+   return (int)((pixeles->pixel[0]+pixeles->pixel[1]+pixeles->pixel[2])/3);
 }
