@@ -46,7 +46,7 @@ int solucion(int argc, char* argv[])
 
     FILE* archivo = abrir_archivo(argv[2], "rb");
     t_metadata metadata = leer_bmp(archivo);
-    t_pixel* pixeles = leer_pixeles(archivo, metadata); // memoria dinamica
+    t_pixel* pixeles = leer_pixeles(archivo, &metadata); // memoria dinamica
 
     fclose(archivo);
 
@@ -54,7 +54,7 @@ int solucion(int argc, char* argv[])
     if (strcmp(argv[1], "--negativo") == 0){
         aplicar_negativo(pixeles, metadata.ancho * metadata.alto);
     }else if(strcmp(argv[1], "--escala-de-grises")== 0){
-
+            escala_de_grises(pixeles,  metadata.ancho * metadata.alto);
     }else if(strcmp(argv[1], "--reducir-contraste")== 0){
         reducir_contraste(pixeles, metadata.ancho * metadata.alto);
     }else if(strcmp(argv[1], "--aumentar-contraste")== 0){
@@ -120,9 +120,9 @@ t_metadata leer_bmp(FILE* archivo)
     return meta;
 }
 
-t_pixel* leer_pixeles(FILE* archivo, t_metadata meta)
+t_pixel* leer_pixeles(FILE* archivo, t_metadata * meta)
 {
-    t_pixel* pixeles = malloc(meta.ancho * meta.alto * sizeof(t_pixel));
+    t_pixel* pixeles = malloc(meta->ancho * meta->alto * sizeof(t_pixel));
     
 
     if(!pixeles){
@@ -130,10 +130,10 @@ t_pixel* leer_pixeles(FILE* archivo, t_metadata meta)
         exit(ERROR_MEMORIA_DINAMICA);
     }
 
-    fseek(archivo, meta.comienzoImagen, SEEK_SET);
-    for (int i = 0; i < meta.ancho * meta.alto; i++)
+    fseek(archivo, meta->comienzoImagen, SEEK_SET);
+    for (int i = 0; i < meta->ancho * meta->alto; i++)
     {
-        pixeles[i].profundidad = meta.profundidad;
+        pixeles[i].profundidad = meta->profundidad;
         fread(pixeles[i].pixel, 3, 1, archivo);  // Leer 3 bytes por pixel
     }
 

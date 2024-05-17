@@ -14,9 +14,10 @@ FILE* abrir_archivo(const char* filename, const char* modo);
 
 //Archivo BMP
 t_metadata leer_bmp(FILE* archivo);
-t_pixel* leer_pixeles(FILE* archivo, t_metadata meta);
+t_pixel* leer_pixeles(FILE* archivo, t_metadata* meta);
 void asignar_nombre_archivo(char* destino, const char* origen, const char* sufijo);
 void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata * meta);
+void escribir_encabezado_bmp(FILE* archivo, t_metadata* meta);
 
 //cambios pixeles BMP
 void aplicar_negativo(t_pixel* pixeles, int cantidad);
@@ -26,6 +27,8 @@ void tonalidad_azul(t_pixel* pixeles, int cantidad);
 void tonalidad_roja(t_pixel* pixeles, int cantidad);
 void tonalidad_verde(t_pixel* pixeles, int cantidad);
 void aumentar_tonalidad(t_pixel* pixeles, int cantidad, int color);
+void escala_de_grises(t_pixel* pixeles, int cantidad);
+int promedio_colores(t_pixel* pixel);
 
 
 #endif // FUNCIONES_ESTUDIANTE_H_INCLUDED
