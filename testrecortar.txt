@@ -1,0 +1,19 @@
+void recortar(t_pixel * pixeles,t_metadata* meta){
+    t_pixel* pixeles_recortados = malloc(((int)(meta->alto/2))*((int)(meta->ancho/2)) * sizeof(t_pixel));
+  printf("golllllllllllll de campi\n");
+    if(!pixeles_recortados){
+        printf("Error al reservar memoria\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+
+    meta->alto = (int)(meta->alto/2);
+    meta->ancho = (int)(meta->ancho/2);
+
+    for(int i=0;i<meta->ancho;i++){
+        for(int j=0;j<meta->alto;j++){
+            pixeles_recortados[i+j * meta->ancho] = pixeles[i+j * meta->ancho];
+        }
+    }
+    free(pixeles);
+    pixeles = pixeles_recortados;
+}
