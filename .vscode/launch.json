@@ -5,7 +5,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}\\main.exe ",
-      "args": ["posicionesA.csv","posicionesB.csv","posicionesC.csv"],
+      "args": ["--tonalidad-verde","unlam.bmp"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
