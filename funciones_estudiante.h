@@ -20,14 +20,18 @@ void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata * meta);
 void escribir_encabezado_bmp(FILE* archivo, t_metadata* meta);
 
 //cambios pixeles BMP
-void aplicar_negativo(t_pixel* pixeles, int cantidad);
-void aumentar_contraste(t_pixel* pixeles, int cantidad);
-void reducir_contraste(t_pixel* pixeles, int cantidad);
-void tonalidad_azul(t_pixel* pixeles, int cantidad);
-void tonalidad_roja(t_pixel* pixeles, int cantidad);
-void tonalidad_verde(t_pixel* pixeles, int cantidad);
-void aumentar_tonalidad(t_pixel* pixeles, int cantidad, int color);
-void escala_de_grises(t_pixel* pixeles, int cantidad);
+void aplicar_negativo(t_pixel* pixeles, const int cantidad);
+void aumentar_contraste(t_pixel* pixeles, const int cantidad);
+void reducir_contraste(t_pixel* pixeles, const int cantidad);
+void tonalidad_azul(t_pixel* pixeles, const int cantidad);
+void tonalidad_roja(t_pixel* pixeles, const int cantidad);
+void tonalidad_verde(t_pixel* pixeles, const int cantidad);
+void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color);
+void escala_de_grises(t_pixel* pixeles, const int cantidad);
+void rotar_derecha(t_pixel* pixeles, const int cantidad, const int ancho, const int alto);
+void aplicar_monocromo(t_pixel* pixeles, const int cantidad);
+void escribir_encabezado_monocromo(FILE* archivo, t_metadata* meta);
+void guardar_monocromo(const char* filename, t_pixel* pixeles, t_metadata * meta);
 int promedio_colores(t_pixel* pixel);
 
 
