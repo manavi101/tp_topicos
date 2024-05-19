@@ -36,91 +36,109 @@ int solucion(int argc, char* argv[])
         Todas las funciones utilizadas deben estar declaradas en este archivo, y en su respectivo .h
     */
 
-    char fileNameDest[TAM_MAX_FILENAME];
-
     if (argc < 3)
     {
-        printf("Uso: %s <operacion> <archivo_original.bmp>\n", argv[0]);
-        return ERROR_ARGUMENTOS;  // Define ERROR en constantes.h
+        printf("Uso: %s <operaciones> <archivo_original.bmp>\n", argv[0]);
+        return ERROR_ARGUMENTOS;
     }
 
-    FILE* archivo = abrir_archivo(argv[2], "rb");
+    FILE* archivo = abrir_archivo(argv[argc-1], "rb");
     t_metadata metadata = leer_bmp(archivo);
-    t_pixel* pixeles = leer_pixeles(archivo, &metadata); // memoria dinamica
+    t_pixel* pixeles = leer_pixeles(archivo, &metadata);
 
-    int cantidad_pixeles = metadata.ancho * metadata.alto;
+    int cantidad_pixeles = metadata.alto * metadata.ancho;
+
     fclose(archivo);
 
-    if (strcmp(argv[1], "--negativo") == 0)
+
+    char baseFileName[TAM_MAX_FILENAME];
+    extraer_nombre_base(baseFileName, argv[argc-1]);
+
+    for (int i = 1; i < argc - 1; i++)
+    {
+        // Copio para no abrir el archivos nuevamente
+        t_pixel* pixeles_copiados = malloc(cantidad_pixeles * sizeof(t_pixel));
+        memcpy(pixeles_copiados, pixeles, cantidad_pixeles * sizeof(t_pixel));
+
+        t_metadata metadata_copia;
+        memcpy(&metadata_copia, &metadata, sizeof(t_metadata));
+
+        procesar_operacion(argv[i], pixeles_copiados, &metadata_copia, baseFileName);
+        free(pixeles_copiados);
+    }
+
+    free(pixeles);
+    return TODO_OK;
+}
+
+int procesar_operacion(char* operacion, t_pixel* pixeles, t_metadata* metadata, char* baseFileName)
+{
+    char fileNameDest[TAM_MAX_FILENAME];
+    generar_nombre_archivo(fileNameDest, baseFileName, operacion);
+
+    int cantidad_pixeles = metadata->ancho * metadata->alto;
+    // Aplicación de negativo
+    if (strcmp(operacion, "--negativo") == 0)
+
     {
         aplicar_negativo(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--escala-de-grises")== 0)
+    else if(strcmp(operacion, "--escala-de-grises")== 0)
     {
         escala_de_grises(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--reducir-contraste")== 0)
+    else if(strcmp(operacion, "--reducir-contraste")== 0)
     {
         reducir_contraste(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--aumentar-contraste")== 0)
+    else if(strcmp(operacion, "--aumentar-contraste")== 0)
     {
         aumentar_contraste(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--tonalidad-azul")== 0)
+    else if(strcmp(operacion, "--tonalidad-azul")== 0)
     {
         tonalidad_azul(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--tonalidad-roja")== 0)
+    else if(strcmp(operacion, "--tonalidad-roja")== 0)
     {
         tonalidad_roja(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--tonalidad-verde")== 0)
+    else if(strcmp(operacion, "--tonalidad-verde")== 0)
     {
         tonalidad_verde(pixeles, cantidad_pixeles);
     }
-    else if(strcmp(argv[1], "--recortar")== 0)
+    else if(strcmp(operacion, "--recortar")== 0)
     {
-        recortar(pixeles,&metadata);
+        recortar(&pixeles, metadata);
     }
-    else if(strcmp(argv[1], "--rotar-derecha")== 0)
+    else if(strcmp(operacion, "--rotar-derecha")== 0)
     {
-        rotar_derecha(&pixeles, &metadata);
+        rotar_derecha(&pixeles, metadata);
     }
-    else if(strcmp(argv[1], "--rotar-izquierda")== 0)
+    else if(strcmp(operacion, "--rotar-izquierda")== 0)
     {
-        rotar_izquierda(&pixeles, &metadata);
+        rotar_izquierda(&pixeles, metadata);
     }
-    else if(strcmp(argv[1], "--achicar")== 0)
+    else if(strcmp(operacion, "--achicar")== 0)
     {
-        achicar(pixeles, &metadata);
+        achicar(pixeles, metadata);
     }
-    else if(strcmp(argv[1], "--monocromo")== 0)
+    else if(strcmp(operacion, "--monocromo")== 0)
     {
         aplicar_monocromo(pixeles, cantidad_pixeles);
-        asignar_nombre_archivo(fileNameDest, argv[2], argv[1]);
-        guardar_monocromo(fileNameDest, pixeles, &metadata);
-
-        free(pixeles); // libera
-
+        guardar_monocromo(fileNameDest, pixeles, metadata);
         return TODO_OK;
     }
     else
     {
         printf("Operacion no valida\n");
-        free(pixeles);
         exit(ERROR_ARGUMENTOS);
     }
-    asignar_nombre_archivo(fileNameDest, argv[2], argv[1]);
 
-
-    // Guardo la imagen modificada
-    guardar_bmp(fileNameDest, pixeles, &metadata);
-    free(pixeles); // libera
+    guardar_bmp(fileNameDest, pixeles, metadata);
 
     return TODO_OK;
 }
-
 
 t_metadata leer_bmp(FILE* archivo)
 {
@@ -155,7 +173,6 @@ t_metadata leer_bmp(FILE* archivo)
 t_pixel* leer_pixeles(FILE* archivo, t_metadata * meta)
 {
     t_pixel* pixeles = malloc(meta->ancho * meta->alto * sizeof(t_pixel));
-
 
     if(!pixeles)
     {
@@ -287,7 +304,6 @@ void escribir_encabezado_monocromo(FILE* archivo, t_metadata* meta)
     fwrite(white, 4, 1, archivo);
 }
 
-
 FILE* abrir_archivo(const char* filename, const char* modo)
 {
     FILE* archivo = fopen(filename, modo);
@@ -304,31 +320,32 @@ FILE* abrir_archivo(const char* filename, const char* modo)
     Asigna un nombre de archivo con sufijo a partir de un nombre de archivo original.
     Ejemplo: si el archivo original es "imagen.bmp" y el sufijo es "--negativo", el archivo destino será "imagen_negativo.bmp"
 */
-void asignar_nombre_archivo(char* destino, const char* origen, const char* sufijo)
+void generar_nombre_archivo(char* destino, const char* origen, const char* sufijo)
 {
-    //origen = "imagen.bmp" termina en .
-    while(*origen != '.')
+    while (*origen != '.' && *origen != '\0')
     {
         *destino = *origen;
         destino++;
         origen++;
     }
-    //agrego el "_" en destino
-    *destino='_';
+    *destino = '_';
     destino++;
-
-    //le agrego el sufijo, elimino el --
-    sufijo+=2;
-    while(*sufijo != '\0')
+    sufijo += 2;
+    while (*sufijo != '\0')
     {
-        *destino = *sufijo;
+        if (*sufijo == '-')
+        {
+            *destino = '_';
+        }
+        else
+        {
+            *destino = *sufijo;
+        }
         destino++;
         sufijo++;
     }
-
-    strcat(destino, ".bmp\0");
+    strcpy(destino, ".bmp");
 }
-
 
 void aplicar_negativo(t_pixel* pixeles, const int cantidad)
 {
@@ -412,7 +429,6 @@ void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
         }
     }
 
-    free(*pixeles);
     *pixeles = pixeles_rotados;
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
@@ -510,24 +526,51 @@ void achicar(t_pixel* pixeles_originales, t_metadata* meta)
     meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
 
-void recortar(t_pixel* pixeles, t_metadata* meta){
-    int nuevoancho=meta->ancho/2;
-    int nuevoalto=meta->alto/2;
-    t_pixel* pixeles_recortados = malloc(nuevoancho*nuevoalto*sizeof(t_pixel));
-    if(!pixeles_recortados){
-        printf("Error al reservar memoria\n");
+
+void extraer_nombre_base(char* dest, const char* fullFileName)
+{
+    const char* lastDot = strrchr(fullFileName, '.');
+    if (lastDot)
+    {
+        size_t nameLength = lastDot - fullFileName;
+        strncpy(dest, fullFileName, nameLength);
+        dest[nameLength] = '\0';
+    }
+    else
+    {
+        strcpy(dest, fullFileName);
+    }
+}
+
+void recortar(t_pixel** pixeles, t_metadata* metadata)
+{
+    // Calcular las nuevas dimensiones
+    unsigned int nuevo_ancho = metadata->ancho / 2;
+    unsigned int nuevo_alto = metadata->alto / 2;
+
+    // Crear un nuevo array para los píxeles recortados
+    t_pixel* pixeles_recortados = malloc(nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+    if (!pixeles_recortados)
+    {
+        printf("Error al reservar memoria para pixeles recortados\n");
         exit(ERROR_MEMORIA_DINAMICA);
     }
-    for(int i = 0; i < nuevoalto; i++){
-        for(int j = 0; j < nuevoancho; j++){
-            int pixel_original = j+(meta->ancho*i);
-            int pixel_copia = j+(nuevoancho*i);
-            pixeles_recortados[pixel_copia] = pixeles[pixel_original];
+
+    // Copiar los píxeles de la parte superior izquierda de la imagen original
+    for (int y = 0; y < nuevo_alto; y++)
+    {
+        for (int x = 0; x < nuevo_ancho; x++)
+        {
+            int idx_original = y * metadata->ancho + x;
+            int idx_nuevo = y * nuevo_ancho + x;
+            pixeles_recortados[idx_nuevo] = (*pixeles)[idx_original];
         }
     }
-    free(pixeles);
-    meta->ancho = nuevoancho;
-    meta->alto = nuevoalto;
-    pixeles = pixeles_recortados;
-    meta->tamArchivo = meta->comienzoImagen + (nuevoancho * nuevoalto * sizeof(t_pixel));
+
+    // Actualizar el puntero de píxeles al nuevo array recortado
+    *pixeles = pixeles_recortados;
+
+    // Actualizar metadata para reflejar el nuevo tamaño
+    metadata->ancho = nuevo_ancho;
+    metadata->alto = nuevo_alto;
 }
