@@ -6,7 +6,7 @@
 #define ARCHIVO_NO_ENCONTRADO 10
 #define NO_SE_PUEDE_CREAR_ARCHIVO 20
 #define TAM_CABECERA_BMP 2
-#define TAM_MAX_FILENAME 100
+#define TAM_MAX_FILENAME 150
 
 // Definicion de Errores
 #define ERROR 0

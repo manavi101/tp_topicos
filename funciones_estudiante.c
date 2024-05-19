@@ -51,7 +51,6 @@ int solucion(int argc, char* argv[])
     int cantidad_pixeles = metadata.ancho * metadata.alto;
     fclose(archivo);
 
-    // Aplicación de negativo
     if (strcmp(argv[1], "--negativo") == 0)
     {
         aplicar_negativo(pixeles, cantidad_pixeles);
@@ -99,6 +98,7 @@ int solucion(int argc, char* argv[])
     else if(strcmp(argv[1], "--monocromo")== 0)
     {
         aplicar_monocromo(pixeles, cantidad_pixeles);
+        asignar_nombre_archivo(fileNameDest, argv[2], argv[1]);
         guardar_monocromo(fileNameDest, pixeles, &metadata);
 
         free(pixeles); // libera
@@ -349,22 +349,22 @@ void reducir_contraste(t_pixel* pixeles, const int cantidad)
 
     while(pixeles < fin)
     {
-        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * REDUCCION_CONTRASTE));  // Rojo
-        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * REDUCCION_CONTRASTE));  // Verde
-        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * REDUCCION_CONTRASTE));  // Azul
+        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * REDUCCION_CONTRASTE));
+        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * REDUCCION_CONTRASTE));
+        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * REDUCCION_CONTRASTE));
         pixeles++;
     }
 }
 
-void aumentar_contraste(t_pixel* pixeles, const int cantidad)  // Si es mayor a 255 queda en ese valor.
+void aumentar_contraste(t_pixel* pixeles, const int cantidad)
 {
     t_pixel* fin = pixeles + cantidad;
 
     while(pixeles < fin)
     {
-        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * AUMENTO_CONTRASTE));  // Rojo
-        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * AUMENTO_CONTRASTE));  // Verde
-        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * AUMENTO_CONTRASTE));  // Azul
+        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * AUMENTO_CONTRASTE));
+        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * AUMENTO_CONTRASTE));
+        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * AUMENTO_CONTRASTE));
         pixeles++;
     }
 }
@@ -393,7 +393,6 @@ void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color)
     }
 }
 
-//Rotar 90 grados a la izquierda
 void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
 {
     int nuevo_ancho = meta->alto;
@@ -415,12 +414,10 @@ void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
 
     free(*pixeles);
     *pixeles = pixeles_rotados;
-
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
 }
 
-//Rotar 90 grados a la derecha
 void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
 {
     int nuevo_ancho = meta->alto;  // El nuevo ancho es el alto original
@@ -449,11 +446,8 @@ void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
 
     free(*pixeles);
     *pixeles = pixeles_rotados;
-
-    // Actualizamos las dimensiones en los metadatos
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
-    // meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
 
 void escala_de_grises(t_pixel* pixeles, const int cantidad)
@@ -527,13 +521,13 @@ void recortar(t_pixel* pixeles, t_metadata* meta){
     for(int i = 0; i < nuevoalto; i++){
         for(int j = 0; j < nuevoancho; j++){
             int pixel_original = j+(meta->ancho*i);
-            int pixel_copia = j+(meta->ancho*i);
+            int pixel_copia = j+(nuevoancho*i);
             pixeles_recortados[pixel_copia] = pixeles[pixel_original];
         }
     }
     free(pixeles);
-    pixeles = pixeles_recortados;
     meta->ancho = nuevoancho;
     meta->alto = nuevoalto;
+    pixeles = pixeles_recortados;
     meta->tamArchivo = meta->comienzoImagen + (nuevoancho * nuevoalto * sizeof(t_pixel));
 }
