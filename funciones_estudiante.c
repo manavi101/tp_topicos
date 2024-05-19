@@ -107,11 +107,11 @@ int procesar_operacion(char* operacion, t_pixel* pixeles, t_metadata* metadata, 
     }
     else if(strcmp(operacion, "--recortar")== 0)
     {
-
+        recortar(&pixeles, metadata);
     }
     else if(strcmp(operacion, "--rotar-derecha")== 0)
     {
-        rotar_derecha(&pixeles, metadata);
+        rotar_izquierda(&pixeles, metadata);
     }
     else if(strcmp(operacion, "--rotar-izquierda")== 0)
     {
@@ -188,7 +188,6 @@ t_pixel* leer_pixeles(FILE* archivo, t_metadata * meta)
 
     return pixeles;
 }
-
 
 void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata * meta)
 {
@@ -553,4 +552,37 @@ void extraer_nombre_base(char* dest, const char* fullFileName)
     {
         strcpy(dest, fullFileName);
     }
+}
+
+void recortar(t_pixel** pixeles, t_metadata* metadata)
+{
+    // Calcular las nuevas dimensiones
+    unsigned int nuevo_ancho = metadata->ancho / 2;
+    unsigned int nuevo_alto = metadata->alto / 2;
+
+    // Crear un nuevo array para los píxeles recortados
+    t_pixel* pixeles_recortados = malloc(nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+    if (!pixeles_recortados)
+    {
+        printf("Error al reservar memoria para pixeles recortados\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+
+    // Copiar los píxeles de la parte superior izquierda de la imagen original
+    for (int y = 0; y < nuevo_alto; y++)
+    {
+        for (int x = 0; x < nuevo_ancho; x++)
+        {
+            int idx_original = y * metadata->ancho + x;
+            int idx_nuevo = y * nuevo_ancho + x;
+            pixeles_recortados[idx_nuevo] = (*pixeles)[idx_original];
+        }
+    }
+
+    // Actualizar el puntero de píxeles al nuevo array recortado
+    *pixeles = pixeles_recortados;
+
+    // Actualizar metadata para reflejar el nuevo tamaño
+    metadata->ancho = nuevo_ancho;
+    metadata->alto = nuevo_alto;
 }
