@@ -12,15 +12,15 @@
     DNI: 40932150
     Entrega: si
     -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
+    Apellido: Rodriguez
+    Nombre: Iara Sol
+    DNI: 42247089
+    Entrega: si
     -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
+    Apellido: Calvo
+    Nombre: Ignacio
+    DNI: 41162300
+    Entrega: si
     -----------------
 
     Comentarios (opcionales) que deseen hacer al docente sobre el TP:
@@ -111,7 +111,7 @@ int procesar_operacion(char* operacion, t_pixel* pixeles, t_metadata* metadata, 
     }
     else if(strcmp(operacion, "--rotar-derecha")== 0)
     {
-        rotar_izquierda(&pixeles, metadata);
+        rotar_derecha(&pixeles, metadata);
     }
     else if(strcmp(operacion, "--rotar-izquierda")== 0)
     {
@@ -303,7 +303,6 @@ void escribir_encabezado_monocromo(FILE* archivo, t_metadata* meta)
     fwrite(white, 4, 1, archivo);
 }
 
-
 FILE* abrir_archivo(const char* filename, const char* modo)
 {
     FILE* archivo = fopen(filename, modo);
@@ -388,7 +387,7 @@ void aumentar_contraste(t_pixel* pixeles, const int cantidad)  // Si es mayor a 
 
 void tonalidad_azul(t_pixel* pixeles, const int cantidad)
 {
-    aumentar_tonalidad(pixeles, cantidad, 2);
+    aumentar_tonalidad(pixeles, cantidad, 0);
 }
 
 void tonalidad_verde(t_pixel* pixeles, const int cantidad)
@@ -398,7 +397,7 @@ void tonalidad_verde(t_pixel* pixeles, const int cantidad)
 
 void tonalidad_roja(t_pixel* pixeles, const int cantidad)
 {
-    aumentar_tonalidad(pixeles, cantidad, 0);
+    aumentar_tonalidad(pixeles, cantidad, 2);
 }
 
 void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color)
@@ -430,7 +429,6 @@ void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
         }
     }
 
-    free(*pixeles);
     *pixeles = pixeles_rotados;
 
     // Intercambiar ancho y alto usando XOR
@@ -451,19 +449,15 @@ void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
         exit(ERROR_MEMORIA_DINAMICA);
     }
 
-    for (int i = 0; i < meta->alto; i++)
-    {
-        for (int j = 0; j < meta->ancho; j++)
-        {
+    for (int i = 0; i < meta->alto; i++) {
+        for (int j = 0; j < meta->ancho; j++) {
             pixeles_rotados[j * nuevo_ancho + i] = (*pixeles)[i * meta->ancho + j];
         }
     }
 
     // Paso 2: Invertir el orden de las columnas
-    for (int j = 0; j < nuevo_alto; j++)
-    {
-        for (int i = 0; i < nuevo_ancho; i++)
-        {
+    for (int j = 0; j < nuevo_alto; j++) {
+        for (int i = 0; i < nuevo_ancho; i++) {
             t_pixel temp = pixeles_rotados[i * nuevo_alto + j];
             pixeles_rotados[i * nuevo_alto + j] = pixeles_rotados[(nuevo_ancho - i - 1) * nuevo_alto + j];
             pixeles_rotados[(nuevo_ancho - i - 1) * nuevo_alto + j] = temp;
@@ -472,11 +466,8 @@ void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
 
     free(*pixeles);
     *pixeles = pixeles_rotados;
-
-    // Actualizamos las dimensiones en los metadatos
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
-    meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
 
 void escala_de_grises(t_pixel* pixeles, const int cantidad)
