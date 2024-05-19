@@ -86,15 +86,15 @@ int solucion(int argc, char* argv[])
     }
     else if(strcmp(argv[1], "--rotar-derecha")== 0)
     {
-
+        rotar_derecha(&pixeles, &metadata);
     }
     else if(strcmp(argv[1], "--rotar-izquierda")== 0)
     {
-
+        rotar_izquierda(&pixeles, &metadata);
     }
     else if(strcmp(argv[1], "--achicar")== 0)
     {
-
+        achicar(pixeles, &metadata);
     }
     else if(strcmp(argv[1], "--monocromo")== 0)
     {
@@ -190,7 +190,7 @@ void guardar_bmp(const char* filename, t_pixel* pixeles, t_metadata * meta)
             fclose(archivo);
             exit(ERROR);
         }
-        fwrite(pixeles->pixel, 1, 1, archivo);  // Escribir 3 bytes por pixel
+        fwrite(pixeles->pixel, 3, 1, archivo);  // Escribir 3 bytes por pixel
     }
     fclose(archivo);
 }
@@ -393,24 +393,69 @@ void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color)
     }
 }
 
-//Rotar 90 grados a la derecha
-void rotar_derecha(t_pixel* pixeles, const int cantidad, const int ancho, const int alto)
+//Rotar 90 grados a la izquierda
+void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
 {
-    t_pixel* pixeles_rotados = malloc(cantidad * sizeof(t_pixel));
-    if(!pixeles_rotados)
+    int nuevo_ancho = meta->alto;
+    int nuevo_alto = meta->ancho;
+    t_pixel* pixeles_rotados = malloc(nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+    if (!pixeles_rotados)
     {
         printf("Error al reservar memoria\n");
         exit(ERROR_MEMORIA_DINAMICA);
     }
-    for(int i = 0; i < ancho; i++)
+
+    for (int i = 0; i < meta->alto; i++)
     {
-        for(int j = 0; j < alto; j++)
+        for (int j = 0; j < meta->ancho; j++)
         {
-            pixeles_rotados[j * ancho + (ancho - i - 1)] = pixeles[i * alto + j];
+            pixeles_rotados[j * nuevo_ancho + (nuevo_ancho - i - 1)] = (*pixeles)[i * meta->ancho + j];
         }
     }
-    free(pixeles);
-    pixeles = pixeles_rotados;
+
+    free(*pixeles);
+    *pixeles = pixeles_rotados;
+
+    // Intercambiar ancho y alto usando XOR
+    meta->ancho ^= meta->alto;
+    meta->alto ^= meta->ancho;
+    meta->ancho ^= meta->alto;
+}
+
+//Rotar 90 grados a la derecha
+void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
+{
+    int nuevo_ancho = meta->alto;  // El nuevo ancho es el alto original
+    int nuevo_alto = meta->ancho;  // El nuevo alto es el ancho original
+    t_pixel* pixeles_rotados = (t_pixel*)malloc(nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+    if (!pixeles_rotados)
+    {
+        printf("Error al reservar memoria\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+
+    for (int i = 0; i < meta->alto; i++) {
+        for (int j = 0; j < meta->ancho; j++) {
+            pixeles_rotados[j * nuevo_ancho + i] = (*pixeles)[i * meta->ancho + j];
+        }
+    }
+
+    // Paso 2: Invertir el orden de las columnas
+    for (int j = 0; j < nuevo_alto; j++) {
+        for (int i = 0; i < nuevo_ancho; i++) {
+            t_pixel temp = pixeles_rotados[i * nuevo_alto + j];
+            pixeles_rotados[i * nuevo_alto + j] = pixeles_rotados[(nuevo_ancho - i - 1) * nuevo_alto + j];
+            pixeles_rotados[(nuevo_ancho - i - 1) * nuevo_alto + j] = temp;
+        }
+    }
+
+    free(*pixeles);
+    *pixeles = pixeles_rotados;
+
+    // Actualizamos las dimensiones en los metadatos
+    meta->ancho = nuevo_ancho;
+    meta->alto = nuevo_alto;
+    meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
 
 void escala_de_grises(t_pixel* pixeles, const int cantidad)
@@ -451,4 +496,24 @@ void aplicar_monocromo(t_pixel* pixeles, const int cantidad)
             p->pixel[2] = 255;
         }
     }
+}
+
+void achicar(t_pixel* pixeles_originales, t_metadata* meta)
+{
+    int nuevo_ancho = meta->ancho / 2;
+    int nuevo_alto = meta->alto / 2;
+
+    for (int y = 0; y < nuevo_alto; y++)
+    {
+        for (int x = 0; x < nuevo_ancho; x++)
+        {
+            int pixel_index_original = (2 * y * meta->ancho) + (2 * x);
+            int pixel_index_nuevo = (y * nuevo_ancho) + x;
+            pixeles_originales[pixel_index_nuevo] = pixeles_originales[pixel_index_original];
+        }
+    }
+
+    meta->ancho = nuevo_ancho;
+    meta->alto = nuevo_alto;
+    meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
