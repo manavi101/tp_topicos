@@ -36,6 +36,9 @@ void guardar_monocromo(const char* filename, t_pixel* pixeles, t_metadata * meta
 int promedio_colores(t_pixel* pixel);
 
 void achicar(t_pixel* pixeles_originales, t_metadata* meta);
+void extraer_nombre_base(char* dest, const char* fullFileName);
+void generar_nombre_archivo(char* destino, const char* origen, const char* sufijo);
+int procesar_operacion(char* operacion, t_pixel* pixeles, t_metadata* metadata, char* baseFileName);
 
 
 #endif // FUNCIONES_ESTUDIANTE_H_INCLUDED
