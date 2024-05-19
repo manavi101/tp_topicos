@@ -12,15 +12,15 @@
     DNI: 40932150
     Entrega: si
     -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
+    Apellido: Rodriguez
+    Nombre: Iara Sol
+    DNI: 42247089
+    Entrega: si
     -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
+    Apellido: Calvo
+    Nombre: Ignacio
+    DNI: 41162300
+    Entrega: si
     -----------------
 
     Comentarios (opcionales) que deseen hacer al docente sobre el TP:
@@ -82,7 +82,7 @@ int solucion(int argc, char* argv[])
     }
     else if(strcmp(argv[1], "--recortar")== 0)
     {
-
+        recortar(pixeles,&metadata);
     }
     else if(strcmp(argv[1], "--rotar-derecha")== 0)
     {
@@ -371,7 +371,7 @@ void aumentar_contraste(t_pixel* pixeles, const int cantidad)  // Si es mayor a 
 
 void tonalidad_azul(t_pixel* pixeles, const int cantidad)
 {
-    aumentar_tonalidad(pixeles, cantidad, 2);
+    aumentar_tonalidad(pixeles, cantidad, 0);
 }
 
 void tonalidad_verde(t_pixel* pixeles, const int cantidad)
@@ -381,7 +381,7 @@ void tonalidad_verde(t_pixel* pixeles, const int cantidad)
 
 void tonalidad_roja(t_pixel* pixeles, const int cantidad)
 {
-    aumentar_tonalidad(pixeles, cantidad, 0);
+    aumentar_tonalidad(pixeles, cantidad, 2);
 }
 
 void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color)
@@ -416,10 +416,8 @@ void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
     free(*pixeles);
     *pixeles = pixeles_rotados;
 
-    // Intercambiar ancho y alto usando XOR
-    meta->ancho ^= meta->alto;
-    meta->alto ^= meta->ancho;
-    meta->ancho ^= meta->alto;
+    meta->ancho = nuevo_ancho;
+    meta->alto = nuevo_alto;
 }
 
 //Rotar 90 grados a la derecha
@@ -455,7 +453,7 @@ void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
     // Actualizamos las dimensiones en los metadatos
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
-    meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+    // meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
 
 void escala_de_grises(t_pixel* pixeles, const int cantidad)
@@ -516,4 +514,26 @@ void achicar(t_pixel* pixeles_originales, t_metadata* meta)
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
     meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+}
+
+void recortar(t_pixel* pixeles, t_metadata* meta){
+    int nuevoancho=meta->ancho/2;
+    int nuevoalto=meta->alto/2;
+    t_pixel* pixeles_recortados = malloc(nuevoancho*nuevoalto*sizeof(t_pixel));
+    if(!pixeles_recortados){
+        printf("Error al reservar memoria\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+    for(int i = 0; i < nuevoalto; i++){
+        for(int j = 0; j < nuevoancho; j++){
+            int pixel_original = j+(meta->ancho*i);
+            int pixel_copia = j+(meta->ancho*i);
+            pixeles_recortados[pixel_copia] = pixeles[pixel_original];
+        }
+    }
+    free(pixeles);
+    pixeles = pixeles_recortados;
+    meta->ancho = nuevoancho;
+    meta->alto = nuevoalto;
+    meta->tamArchivo = meta->comienzoImagen + (nuevoancho * nuevoalto * sizeof(t_pixel));
 }

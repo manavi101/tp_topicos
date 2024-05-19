@@ -34,3 +34,22 @@
 
 1715455918 c:\users\mativ\desktop\universidad\progra\tp 2\constantes.h
 
+1716079550 source:c:\users\iaras\desktop\tp_topicos\main.c
+	<stdio.h>
+	"funciones_estudiante.h"
+	"constantes.h"
+
+1716087538 c:\users\iaras\desktop\tp_topicos\funciones_estudiante.h
+	"constantes.h"
+	"estructuras.h"
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+
+1716079550 c:\users\iaras\desktop\tp_topicos\constantes.h
+
+1716079550 c:\users\iaras\desktop\tp_topicos\estructuras.h
+
+1716087822 source:c:\users\iaras\desktop\tp_topicos\funciones_estudiante.c
+	"funciones_estudiante.h"
+
