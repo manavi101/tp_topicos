@@ -50,6 +50,7 @@ int solucion(int argc, char* argv[])
 
     fclose(archivo);
 
+
     char baseFileName[TAM_MAX_FILENAME];
     extraer_nombre_base(baseFileName, argv[argc-1]);
 
@@ -78,6 +79,7 @@ int procesar_operacion(char* operacion, t_pixel* pixeles, t_metadata* metadata, 
     int cantidad_pixeles = metadata->ancho * metadata->alto;
     // Aplicación de negativo
     if (strcmp(operacion, "--negativo") == 0)
+
     {
         aplicar_negativo(pixeles, cantidad_pixeles);
     }
@@ -125,7 +127,6 @@ int procesar_operacion(char* operacion, t_pixel* pixeles, t_metadata* metadata, 
     {
         aplicar_monocromo(pixeles, cantidad_pixeles);
         guardar_monocromo(fileNameDest, pixeles, metadata);
-
         return TODO_OK;
     }
     else
@@ -365,22 +366,22 @@ void reducir_contraste(t_pixel* pixeles, const int cantidad)
 
     while(pixeles < fin)
     {
-        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * REDUCCION_CONTRASTE));  // Rojo
-        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * REDUCCION_CONTRASTE));  // Verde
-        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * REDUCCION_CONTRASTE));  // Azul
+        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * REDUCCION_CONTRASTE));
+        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * REDUCCION_CONTRASTE));
+        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * REDUCCION_CONTRASTE));
         pixeles++;
     }
 }
 
-void aumentar_contraste(t_pixel* pixeles, const int cantidad)  // Si es mayor a 255 queda en ese valor.
+void aumentar_contraste(t_pixel* pixeles, const int cantidad)
 {
     t_pixel* fin = pixeles + cantidad;
 
     while(pixeles < fin)
     {
-        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * AUMENTO_CONTRASTE));  // Rojo
-        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * AUMENTO_CONTRASTE));  // Verde
-        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * AUMENTO_CONTRASTE));  // Azul
+        pixeles->pixel[0] = MAXRGB((int)(pixeles->pixel[0] * AUMENTO_CONTRASTE));
+        pixeles->pixel[1] = MAXRGB((int)(pixeles->pixel[1] * AUMENTO_CONTRASTE));
+        pixeles->pixel[2] = MAXRGB((int)(pixeles->pixel[2] * AUMENTO_CONTRASTE));
         pixeles++;
     }
 }
@@ -409,7 +410,6 @@ void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color)
     }
 }
 
-//Rotar 90 grados a la izquierda
 void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
 {
     int nuevo_ancho = meta->alto;
@@ -430,14 +430,10 @@ void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
     }
 
     *pixeles = pixeles_rotados;
-
-    // Intercambiar ancho y alto usando XOR
-    meta->ancho ^= meta->alto;
-    meta->alto ^= meta->ancho;
-    meta->ancho ^= meta->alto;
+    meta->ancho = nuevo_ancho;
+    meta->alto = nuevo_alto;
 }
 
-//Rotar 90 grados a la derecha
 void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
 {
     int nuevo_ancho = meta->alto;  // El nuevo ancho es el alto original
@@ -529,6 +525,7 @@ void achicar(t_pixel* pixeles_originales, t_metadata* meta)
     meta->alto = nuevo_alto;
     meta->tamArchivo = meta->comienzoImagen + (nuevo_ancho * nuevo_alto * sizeof(t_pixel));
 }
+
 
 void extraer_nombre_base(char* dest, const char* fullFileName)
 {
