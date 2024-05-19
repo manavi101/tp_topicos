@@ -28,11 +28,14 @@ void tonalidad_roja(t_pixel* pixeles, const int cantidad);
 void tonalidad_verde(t_pixel* pixeles, const int cantidad);
 void aumentar_tonalidad(t_pixel* pixeles, const int cantidad, const int color);
 void escala_de_grises(t_pixel* pixeles, const int cantidad);
-void rotar_derecha(t_pixel* pixeles, const int cantidad, const int ancho, const int alto);
+void rotar_izquierda(t_pixel** pixeles, t_metadata *meta);
+void rotar_derecha(t_pixel** pixeles, t_metadata *meta);
 void aplicar_monocromo(t_pixel* pixeles, const int cantidad);
 void escribir_encabezado_monocromo(FILE* archivo, t_metadata* meta);
 void guardar_monocromo(const char* filename, t_pixel* pixeles, t_metadata * meta);
 int promedio_colores(t_pixel* pixel);
+
+void achicar(t_pixel* pixeles_originales, t_metadata* meta);
 
 
 #endif // FUNCIONES_ESTUDIANTE_H_INCLUDED
