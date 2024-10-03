@@ -53,20 +53,23 @@ int solucion(int argc, char* argv[])
 
     char baseFileName[TAM_MAX_FILENAME];
     extraer_nombre_base(baseFileName, argv[argc-1]);
-
-    for (int i = 1; i < argc - 1; i++)
+    if(strcmp(argv[1], "--concatenar-horizontal") == 0)
     {
-        // Copio para no abrir el archivos nuevamente
-        t_pixel* pixeles_copiados = malloc(cantidad_pixeles * sizeof(t_pixel));
-        memcpy(pixeles_copiados, pixeles, cantidad_pixeles * sizeof(t_pixel));
+        conactenarHorizontal(pixeles, &metadata,baseFileName, argv[argc-2]);
+    }else{
+        for (int i = 1; i < argc - 1; i++)
+        {
+            // Copio para no abrir el archivos nuevamente
+            t_pixel* pixeles_copiados = malloc(cantidad_pixeles * sizeof(t_pixel));
+            memcpy(pixeles_copiados, pixeles, cantidad_pixeles * sizeof(t_pixel));
 
-        t_metadata metadata_copia;
-        memcpy(&metadata_copia, &metadata, sizeof(t_metadata));
+            t_metadata metadata_copia;
+            memcpy(&metadata_copia, &metadata, sizeof(t_metadata));
 
-        procesar_operacion(argv[i], pixeles_copiados, &metadata_copia, baseFileName);
-        free(pixeles_copiados);
+            procesar_operacion(argv[i], pixeles_copiados, &metadata_copia, baseFileName);
+            free(pixeles_copiados);
+        }
     }
-
     free(pixeles);
     return TODO_OK;
 }
@@ -434,33 +437,26 @@ void rotar_izquierda(t_pixel** pixeles, t_metadata *meta)
     meta->alto = nuevo_alto;
 }
 
+
 void rotar_derecha(t_pixel** pixeles, t_metadata *meta)
 {
-    int nuevo_ancho = meta->alto;  // El nuevo ancho es el alto original
-    int nuevo_alto = meta->ancho;  // El nuevo alto es el ancho original
-    t_pixel* pixeles_rotados = (t_pixel*)malloc(nuevo_ancho * nuevo_alto * sizeof(t_pixel));
+    int nuevo_ancho = meta->alto;
+    int nuevo_alto = meta->ancho;
+    t_pixel* pixeles_rotados = malloc(nuevo_ancho * nuevo_alto * sizeof(t_pixel));
     if (!pixeles_rotados)
     {
         printf("Error al reservar memoria\n");
         exit(ERROR_MEMORIA_DINAMICA);
     }
 
-    for (int i = 0; i < meta->alto; i++) {
-        for (int j = 0; j < meta->ancho; j++) {
-            pixeles_rotados[j * nuevo_ancho + i] = (*pixeles)[i * meta->ancho + j];
+    for (int i = 0; i < meta->alto; i++)
+    {
+        for (int j = 0; j < meta->ancho; j++)
+        {
+            pixeles_rotados[(meta->ancho-j-1)*meta->alto+i] = (*pixeles)[i * meta->ancho + j];
         }
     }
 
-    // Paso 2: Invertir el orden de las columnas
-    for (int j = 0; j < nuevo_alto; j++) {
-        for (int i = 0; i < nuevo_ancho; i++) {
-            t_pixel temp = pixeles_rotados[i * nuevo_alto + j];
-            pixeles_rotados[i * nuevo_alto + j] = pixeles_rotados[(nuevo_ancho - i - 1) * nuevo_alto + j];
-            pixeles_rotados[(nuevo_ancho - i - 1) * nuevo_alto + j] = temp;
-        }
-    }
-
-    free(*pixeles);
     *pixeles = pixeles_rotados;
     meta->ancho = nuevo_ancho;
     meta->alto = nuevo_alto;
@@ -573,4 +569,48 @@ void recortar(t_pixel** pixeles, t_metadata* metadata)
     // Actualizar metadata para reflejar el nuevo tamaño
     metadata->ancho = nuevo_ancho;
     metadata->alto = nuevo_alto;
+}
+void conactenarHorizontal(t_pixel* pixeles, t_metadata* metadata, const char * baseFilename1,const char * fileName2 ){
+    FILE* archivo2 = abrir_archivo(fileName2, "rb");
+    t_metadata metadata2 = leer_bmp(archivo2);
+    t_pixel* pixeles2 = leer_pixeles(archivo2, &metadata2);
+    char fileNameDest[TAM_MAX_FILENAME];
+
+    t_metadata nuevaMetadata = metadata2;
+    nuevaMetadata.ancho = metadata->ancho + metadata2.ancho;
+    nuevaMetadata.alto = metadata->alto<metadata2.alto?metadata2.alto:metadata->alto;
+
+    t_pixel pixelNegro = {{0,0,0},24};
+
+    t_pixel* nuevosPixeles = malloc(nuevaMetadata.ancho * nuevaMetadata.alto * sizeof(t_pixel));
+    if (!nuevosPixeles)
+    {
+        printf("Error al reservar memoria\n");
+        exit(ERROR_MEMORIA_DINAMICA);
+    }
+
+    for(int i=0; i<nuevaMetadata.alto; i++){
+        for(int j=0; j<nuevaMetadata.ancho; j++){
+            if(j>=metadata->ancho){
+                if(i<metadata2.alto){
+                    nuevosPixeles[i*nuevaMetadata.ancho+j] = pixeles2[i*metadata2.ancho+j-metadata->ancho];
+                }else{
+                    nuevosPixeles[i*nuevaMetadata.ancho+j] = pixelNegro;
+                }
+            }else{
+                if(i<metadata->alto){
+                    nuevosPixeles[i*nuevaMetadata.ancho+j] = pixeles[i*metadata->ancho+j];
+                }else{
+                    nuevosPixeles[i*nuevaMetadata.ancho+j] = pixelNegro;
+                }
+            }
+        }
+    }
+
+    nuevaMetadata.tamArchivo = nuevaMetadata.comienzoImagen + (nuevaMetadata.ancho * nuevaMetadata.alto * sizeof(t_pixel));
+    
+    generar_nombre_archivo(fileNameDest, baseFilename1, "--concatenar-horizontal");
+    guardar_bmp(fileNameDest, nuevosPixeles, &nuevaMetadata);
+    free(pixeles2);
+    free(nuevosPixeles);
 }
